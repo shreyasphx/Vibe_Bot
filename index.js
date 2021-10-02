@@ -64,7 +64,7 @@ client.on("message", async message => {
             message.reply("Now Playing: " + queue[0].title + "\n" + queue[0].url);
         }
         if(message.content.substring(1,1) === "k"){
-            
+            message.guild.me.voice.channel.leave();
         }
     }
 })
