@@ -60,10 +60,11 @@ client.on("message", async message => {
             message.reply("There are " + queue.length + " items in the queue:\n" + queueLog);
         }
         if(message.content.substring(1,2) === "np"){
-            //sends info on the currently playing item
+        //sends info on the currently playing item
             message.reply("Now Playing: " + queue[0].title + "\n" + queue[0].url);
         }
         if(message.content.substring(1,1) === "k"){
+        //disconnects the bot from the voice channel
             message.guild.me.voice.channel.leave();
         }
     }
