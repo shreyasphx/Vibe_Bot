@@ -1,16 +1,13 @@
-//dependencies
-const Discord = require('discord.js');
+global.Discord = require("discord.js");
 const{
     prefix,
     token,
-} = require('./config.json');
-const ytdl = require('ytdl-core');
+} = require("./config.json"); 
+const ytdl = require("ytdl-core");
 const client = new Discord.Client();
-//A queue of songs to be played
-var queue = [];
+const queue = [];
 
 client.login(token);
-
 client.once('ready', () => {
     console.log('Ready!');
    });
@@ -20,34 +17,45 @@ client.once('reconnecting', () => {
 client.once('disconnect', () => {
     console.log('Disconnect!');
    });
-
-//interpret commands whenever a user sends a message
 client.on("message", async message => {
     if(message.author.bot){
         return;
     }
+
+    const voiceChannel = message.member.voice.channel;
     if(message.content.charAt(0) == prefix){
-        const voiceChannel = message.member.voice.channel;
+        const args = message.content.split(" ");
+        const songInfo = await ytdl.getInfo(args[1]);
+        const song = {
+            title: songInfo.videoDetails.title,
+            url: songInfo.videoDetails.video_url,
+        };
+        queue.push(song);
         if(voiceChannel){
-            message.author.channel.join();
+            voiceChannel.join();
             message.reply("Joined the voice channel!");
         }
         else{
             message.reply("User is not in voice channel!");
             return;
         }
-        if(message.content.substring(1,1) === "p"){
-            const args = message.content.split(" ");
-            const songInfo = await ytdl.getInfo(args[1]);
-            const song = {
-                title: songInfo.videoDetails.title,
-                url: songInfo.videoDetails.video_url,
-            };
-            queue.push(song);
-            play();
-        }
-        if(message.content.substring(1,1) === "s"){
+        if(message.content.charAt(1) === 'p'){
             
+            const serverQueue = queue.getInfo(guild.id);
+            if (!song) {
+                serverQueue.voiceChannel.leave();
+                queue.delete(guild.id);
+                return;
+            }
+
+            const stream = ytdl(queue.url, {filter: 'audioonly'});
+            const connection= await voiceChannel.join();
+            connection.play(stream, {seek:0, volume:5});
+        }
+        
+        if(message.content.substring(0,0) === "s"){
+            
+
         }
         if(message.content.substring(1,1) === "q"){
         //sends info on all the items in the queue
@@ -67,15 +75,34 @@ client.on("message", async message => {
         //disconnects the bot from the voice channel
             message.guild.me.voice.channel.leave();
         }
-    }
-})
 
-//play the contents of the queue using youtubedl
-async function play(){
+    }
 
 }
+)
 
-//stops whatever is being played
-async function stop(){
+function play(guild, song) {
 
+    const serverQueue = queue.getInfo(guild.id);
+    if (!song) {
+            serverQueue.voiceChannel.leave();
+            queue.delete(guild.id);
+            return;
+    }
+
+    ytdl(song.url);
+}
+
+function quit(guild, song) {
+
+    if (!message.member.voice.channel) {
+
+        return message.channel.send("You are not in a voice channel.");
+    } else if (!serverQueue) {
+
+            return message.channel.channel.send("There are no songs playing.");
+    }
+
+    serverQueue.songs = [];
+    serverQueue.connection.dispatcher.end();
 }
