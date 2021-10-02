@@ -57,16 +57,23 @@ client.on("message", async message => {
             
 
         }
-        if(message.content.substring(0,0) === "q"){
-          
-          quit(message, serverQueue);
-          return;     
+        if(message.content.substring(1,1) === "q"){
+        //sends info on all the items in the queue
+            var queueLog = "";
+            for(let i = 0; i < queue.length; i++){
+                queueLog += i + ". "
+                queueLog += queue[i].title + "\n*** ";
+                queueLog += queue[i].url + " ***" + "\n";
+            }
+            message.reply("There are " + queue.length + " items in the queue:\n" + queueLog);
         }
-        if(message.content.substring(0,1) === "np"){
-            
+        if(message.content.substring(1,2) === "np"){
+        //sends info on the currently playing item
+            message.reply("Now Playing: " + queue[0].title + "\n" + queue[0].url);
         }
-        if(message.content.substring(0,0) === "k"){
-
+        if(message.content.substring(1,1) === "k"){
+        //disconnects the bot from the voice channel
+            message.guild.me.voice.channel.leave();
         }
 
     }
