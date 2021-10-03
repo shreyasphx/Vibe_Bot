@@ -28,51 +28,56 @@ client.on("message", async message => {
     if(message.content.charAt(0) == prefix){
         
         if(voiceChannel){
-            voiceChannel.join();
-            message.reply("Joined the voice channel!");
         }
         else{
             message.reply("User is not in voice channel!");
             return;
         }
         if(message.content.charAt(1) === "p"){
+            voiceChannel.join();
+            message.reply("Joined the voice channel!");
             evaluateQueue(message, serverQueue);
             return;
         }
         
         if(message.content.substring(1,1) === "s"){
-            
-
+            skip(message, serverQueue);
         }
         if(message.content.substring(1,1) === "q"){
             //sends info on all the items in the queue
                 var queueLog = "";
-                for(let i = 0; i < queue.length; i++){
+                for(let i = 0; i < queue.get(message.guild.id).songs.length; i++){
                     queueLog += i + ". "
-                    queueLog += queue[i].title + "\n*** ";
-                    queueLog += queue[i].url + " ***" + "\n";
+                    queueLog += queue.get(message.guild.id).songs[i].title + "\n*** ";
+                    queueLog += queue.get(messsage.guild.id).songs[i].url + " ***" + "\n";
                 }
-                message.reply("There are " + queue.length + " items in the queue:\n" + queueLog);
+                message.reply("There are " + queue.get(message.guild.id).songslength + " items in the queue:\n" + queueLog);
             }
             if(message.content.substring(1,2) === "np"){
             //sends info on the currently playing item
-                message.reply("Now Playing: " + queue[0].title + "\n" + queue[0].url);
+                message.reply("Now Playing: " + queue.get(message.guild.id).songs[0].title + "\n" + queue.get(message.guild.id).songs[0].url);
             }
             if(message.content.substring(1,1) === "k"){
             //disconnects the bot from the voice channel
-                message.guild.me.voice.channel.leave();
+                quit(message.guild, queue.get(message.guild.id).songs[0]);
             }
 
     }
 
 }
 )
-
+async function skip(message, serverQueue){
+    if(!serverQueue){
+        message.channel.send("There is no song to skip");
+        return
+    }else{
+        serverQueue.connection.dispatcher.end();
+    }
+}
 async function evaluateQueue(message, serverQueue) {
     const args = message.content.split(" ");
     const songInfo = await ytdl.getInfo(args[1]);
     const voiceChannel = message.member.voice.channel;
-    const textChannel = message.channel;
     const song = {
         title: songInfo.videoDetails.title,
         url: songInfo.videoDetails.video_url,
@@ -80,9 +85,10 @@ async function evaluateQueue(message, serverQueue) {
     if (!serverQueue){
         const songQueue = {
             voiceChannel : voiceChannel,
-            textChannel : textChannel,
+            textChannel : message.channel,
             connection : null,
             songs : [],
+            volume : 5,
             playing : true
         };
         queue.set(message.guild.id, songQueue);
@@ -93,7 +99,7 @@ async function evaluateQueue(message, serverQueue) {
             play(message.guild, songQueue.songs[0]);
 
         } catch(err){
-
+            console.log(err);
         }
     }else{
         serverQueue.songs.push(song);
@@ -103,14 +109,14 @@ async function evaluateQueue(message, serverQueue) {
 }
 
 function play(guild, song){
-    const playQueue = queue.get(message.guild.id);
+    const playQueue = queue.get(guild.id);
     const dispatcher = playQueue.connection
         .play(ytdl(song.url))
         .on("finish", () => {
             playQueue.songs.shift();
             play(guild, playQueue.songs[0]);
         })
-    dispatcher.setVolumeLogarithmic(serverQueue.volume / 5);
+    dispatcher.setVolumeLogarithmic(playQueue.volume / 5);
     playQueue.textChannel.send(`Started playing: **${song.title}**`);
 }
 function quit(guild, song) {
@@ -126,3 +132,6 @@ function quit(guild, song) {
     serverQueue.songs = [];
     serverQueue.connection.dispatcher.end();
 }
+
+client.login(token);
+
