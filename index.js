@@ -41,22 +41,21 @@ client.on("message", async message => {
         }
         
         if(message.content.substring(1,1) === "s"){
-            
-
+            skip(message, serverQueue);
         }
         if(message.content.substring(1,1) === "q"){
             //sends info on all the items in the queue
                 var queueLog = "";
-                for(let i = 0; i < queue.length; i++){
+                for(let i = 0; i < queue.get(message.guild.id).songs.length; i++){
                     queueLog += i + ". "
-                    queueLog += queue[i].title + "\n*** ";
-                    queueLog += queue[i].url + " ***" + "\n";
+                    queueLog += queue.get(message.guild.id).songs[i].title + "\n*** ";
+                    queueLog += queue.get(messsage.guild.id).songs[i].url + " ***" + "\n";
                 }
-                message.reply("There are " + queue.length + " items in the queue:\n" + queueLog);
+                message.reply("There are " + queue.get(message.guild.id).songslength + " items in the queue:\n" + queueLog);
             }
             if(message.content.substring(1,2) === "np"){
             //sends info on the currently playing item
-                message.reply("Now Playing: " + queue[0].title + "\n" + queue[0].url);
+                message.reply("Now Playing: " + queue.get(message.guild.id).songs[0].title + "\n" + queue.get(message.guild.id).songs[0].url);
             }
             if(message.content.substring(1,1) === "k"){
             //disconnects the bot from the voice channel
@@ -67,7 +66,14 @@ client.on("message", async message => {
 
 }
 )
-
+async function skip(message, serverQueue){
+    if(!serverQueue){
+        message.channel.send("There is no song to skip");
+        return
+    }else{
+        serverQueue.connection.dispatcher.end();
+    }
+}
 async function evaluateQueue(message, serverQueue) {
     const args = message.content.split(" ");
     const songInfo = await ytdl.getInfo(args[1]);
