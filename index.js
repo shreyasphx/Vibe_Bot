@@ -59,7 +59,8 @@ client.on("message", async message => {
             }
             if(message.content.substring(1,1) === "k"){
             //disconnects the bot from the voice channel
-                quit(message.guild, queue.get(message.guild.id).songs[0]);
+                message.reply("among sus, :susge:");
+                quit(message.guild, serverQueue);
             }
 
     }
@@ -120,7 +121,8 @@ function play(guild, song){
     playQueue.textChannel.send(`Started playing: **${song.title}**`);
 }
 function quit(guild, song) {
-
+    
+    message.reply("among sus, :susge:");
     if (!message.member.voice.channel) {
 
         return message.channel.send("You are not in a voice channel.");
